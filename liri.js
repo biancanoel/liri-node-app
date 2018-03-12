@@ -3,21 +3,23 @@ var request = require('request');
 var keys = require('./keys.js')
 var Twitter = require('twitter');
 var Spotify = require('node-spotify-api');
+var fs = require("fs");
+var moment = require('moment');
 
 var spotify = new Spotify(keys.spotify);
 var client = new Twitter(keys.twitter);
 var command = process.argv[2];
 
 
-//TWITTER
 
+//TWITTER
 if (command==="my-tweets") {
     var params = {screen_name: 'bnoeltorres'};
     client.get('statuses/user_timeline', params, function(error, tweets, response) {
       if (!error) {
         
         for (i=0; i<tweets.length; i++) {
-            console.log(' "'+tweets[i].text+'"' + " was tweeted on " +tweets[i].created_at);
+            console.log(' "'+tweets[i].text+'"' + " was tweeted on " +moment(tweets[i].created_at).format('MMMM Do YYYY, h:mm:ss a'));
         }
       }
     });
@@ -28,17 +30,17 @@ if (command=== "spotify-this-song") {
   var track="";
   var argv = process.argv;
 
-  if (argv.length<3) {
+  if (argv.length>3) {
     for (i=3; i<argv.length; i++) {
       track =track+ " " +argv[i];
     }
   }  else {
     track = "The Sign";
   };
+  spotifySong();
+}
 
-  // console.log(track);
-  
-
+function spotifySong() {
   spotify.search({ type: 'track', query: track, limit: 1 }, function(err, data) {
     if (err) {
       return console.log('Error occurred: ' + err);
@@ -51,6 +53,7 @@ if (command=== "spotify-this-song") {
   });
   
 }
+
 
 //OMDB
  if(command === "movie-this") {
@@ -66,7 +69,7 @@ if (command=== "spotify-this-song") {
      movieName= "Mr. Nobody";
    }
   
-   //Call ombd API 
+   
   console.log(movieName);
   var queryUrl = "http://www.omdbapi.com/?t=" + movieName + "&y=&plot=short&apikey=trilogy";
 
@@ -83,6 +86,26 @@ if (command=== "spotify-this-song") {
     }
   })
  }  
+
+ //DO WHAT IT SAYS
+ if ( command==="do-what-it-says") {
+   //read text from random.txt file 
+   fs.readFile("random.txt", "utf8", function(err, data) {
+     if (err) {
+       return console.log("Error: "+err);
+     }
+     //console.log(data)
+     var newArray = data.split(",");
+     //console.log(newArray);
+     command = newArray[0];
+     track = newArray[1];
+     console.log(command+ " , " + track)
+     spotifySong();
+
+   })
+ }
+
+
 
   
 
